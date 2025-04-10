@@ -14,6 +14,9 @@ import LikedSongsPage from './pages/LikedSongsPage';
 import SettingsPage from './pages/SettingsPage';
 import ArtistPage from './pages/ArtistPage';
 import AlbumPage from './pages/AlbumPage';
+import ArtistDashboardPage from './pages/ArtistDashboardPage';
+import DiscoverPage from './pages/DiscoverPage';
+import ArtistsPage from './pages/ArtistsPage';
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -25,6 +28,25 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
+// Artist route component
+const ArtistRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, isLoading, isArtist } = useAuthStore();
+  
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (!isArtist()) {
+    return <Navigate to="/" replace />;
   }
   
   return <>{children}</>;
@@ -47,6 +69,8 @@ function App() {
       <Route path="/" element={<MainLayout />}>
         <Route index element={<HomePage />} />
         <Route path="search" element={<SearchPage />} />
+        <Route path="discover" element={<DiscoverPage />} />
+        <Route path="artists" element={<ArtistsPage />} />
         <Route path="library" element={<LibraryPage />} />
         <Route path="playlist/:id" element={<PlaylistPage />} />
         <Route path="liked" element={<LikedSongsPage />} />
@@ -60,6 +84,16 @@ function App() {
             <ProtectedRoute>
               <SettingsPage />
             </ProtectedRoute>
+          } 
+        />
+        
+        {/* Artist routes */}
+        <Route 
+          path="artist-dashboard/*" 
+          element={
+            <ArtistRoute>
+              <ArtistDashboardPage />
+            </ArtistRoute>
           } 
         />
       </Route>

@@ -1,11 +1,13 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Search, Library, Heart, Plus, Music } from 'lucide-react';
+import { Home, Search, Library, Heart, Plus, Music, Compass, Users, BarChart } from 'lucide-react';
 import { useLibraryStore } from '../../store/useLibraryStore';
+import { useAuthStore } from '../../store/useAuthStore';
 import { Button } from '../ui/Button';
 
 export const Sidebar: React.FC = () => {
   const { playlists, createPlaylist } = useLibraryStore();
+  const { user, isArtist } = useAuthStore();
   
   const handleCreatePlaylist = () => {
     const name = prompt('Enter playlist name:');
@@ -50,6 +52,32 @@ export const Sidebar: React.FC = () => {
           </NavLink>
           
           <NavLink
+            to="/discover"
+            className={({ isActive }) => `
+              flex items-center px-3 py-2 text-sm font-medium rounded-md
+              ${isActive 
+                ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' 
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}
+            `}
+          >
+            <Compass className="mr-3 h-5 w-5" />
+            Discover
+          </NavLink>
+          
+          <NavLink
+            to="/artists"
+            className={({ isActive }) => `
+              flex items-center px-3 py-2 text-sm font-medium rounded-md
+              ${isActive 
+                ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' 
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}
+            `}
+          >
+            <Users className="mr-3 h-5 w-5" />
+            Artists
+          </NavLink>
+          
+          <NavLink
             to="/library"
             className={({ isActive }) => `
               flex items-center px-3 py-2 text-sm font-medium rounded-md
@@ -74,6 +102,21 @@ export const Sidebar: React.FC = () => {
             <Heart className="mr-3 h-5 w-5" />
             Liked Songs
           </NavLink>
+          
+          {isArtist() && (
+            <NavLink
+              to="/artist-dashboard"
+              className={({ isActive }) => `
+                flex items-center px-3 py-2 text-sm font-medium rounded-md
+                ${isActive 
+                  ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' 
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}
+              `}
+            >
+              <BarChart className="mr-3 h-5 w-5" />
+              Artist Dashboard
+            </NavLink>
+          )}
         </nav>
       </div>
       

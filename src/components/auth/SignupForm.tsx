@@ -1,20 +1,59 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User } from 'lucide-react';
+import { Mail, Lock, User, Music } from 'lucide-react';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useNavigate } from 'react-router-dom';
+import { Toggle } from '../ui/Toggle';
 
 export const SignupForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [isArtist, setIsArtist] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  
   const { signUp, isLoading, error } = useAuthStore();
   const navigate = useNavigate();
   
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+    
+    if (!username.trim()) {
+      errors.username = 'Username is required';
+    } else if (username.length < 3) {
+      errors.username = 'Username must be at least 3 characters';
+    }
+    
+    if (!email.trim()) {
+      errors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      errors.email = 'Email is invalid';
+    }
+    
+    if (!password) {
+      errors.password = 'Password is required';
+    } else if (password.length < 6) {
+      errors.password = 'Password must be at least 6 characters';
+    }
+    
+    if (password !== confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signUp(email, password, username);
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    await signUp(email, password, username, isArtist ? 'artist' : 'user');
     
     // If no error, redirect to home
     if (!useAuthStore.getState().error) {
@@ -44,6 +83,7 @@ export const SignupForm: React.FC = () => {
           placeholder="Choose a username"
           required
           leftIcon={<User size={18} className="text-gray-500 dark:text-gray-400" />}
+          error={validationErrors.username}
         />
         
         <Input
@@ -54,6 +94,7 @@ export const SignupForm: React.FC = () => {
           placeholder="Enter your email"
           required
           leftIcon={<Mail size={18} className="text-gray-500 dark:text-gray-400" />}
+          error={validationErrors.email}
         />
         
         <Input
@@ -64,8 +105,40 @@ export const SignupForm: React.FC = () => {
           placeholder="Create a password"
           required
           leftIcon={<Lock size={18} className="text-gray-500 dark:text-gray-400" />}
+          error={validationErrors.password}
           helperText="Password must be at least 6 characters"
         />
+        
+        <Input
+          label="Confirm Password"
+          type="password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          placeholder="Confirm your password"
+          required
+          leftIcon={<Lock size={18} className="text-gray-500 dark:text-gray-400" />}
+          error={validationErrors.confirmPassword}
+        />
+        
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Sign up as an artist
+          </label>
+          <Toggle
+            isChecked={isArtist}
+            onChange={() => setIsArtist(!isArtist)}
+          />
+        </div>
+        
+        {isArtist && (
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-md text-sm flex items-start">
+            <Music size={18} className="mr-2 mt-0.5 flex-shrink-0" />
+            <p>
+              Artist accounts can upload and manage music, view analytics, and customize their profile.
+              You'll be able to set up your artist profile after registration.
+            </p>
+          </div>
+        )}
         
         <Button
           type="submit"
